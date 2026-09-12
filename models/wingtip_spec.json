@@ -1,0 +1,5 @@
+{
+  "features": [
+    {"name": "mount_holes", "type": "cylinder", "diameter_mm": 4.2, "count": 3}
+  ]
+}

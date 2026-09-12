@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv-agentcad/bin/agentcad:*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(make:*)"
+    ]
+  },
+  "enabledMcpjsonServers": ["agentcad"]
+}
