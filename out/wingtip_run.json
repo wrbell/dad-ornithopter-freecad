@@ -1,0 +1,209 @@
+{
+  "config": {
+    "airfoil": "s1223",
+    "root_chord_mm": 165.0,
+    "tip_chord_mm": 80.0,
+    "span_mm": 270.0,
+    "le_sweep_deg": 15.0,
+    "washout_deg": 8.0,
+    "dihedral_deg": 0.0,
+    "wall_thickness_mm": 2.5,
+    "te_truncate_pct": 1.0,
+    "gurney_flap_pct": 0.0,
+    "gurney_thickness_mm": 1.2,
+    "mount_holes": [
+      {
+        "name": "fwd",
+        "x_pct": 18.0,
+        "d_mm": 4.2,
+        "z_pct": null
+      },
+      {
+        "name": "mid",
+        "x_pct": 40.0,
+        "d_mm": 4.2,
+        "z_pct": null
+      },
+      {
+        "name": "aft",
+        "x_pct": 65.0,
+        "d_mm": 4.2,
+        "z_pct": null
+      }
+    ],
+    "hole_depth_mm": 15.0,
+    "boss_wall_mm": 2.5,
+    "hole_min_wall_mm": 1.0,
+    "root_solid_mm": 0.0,
+    "n_per_surface": 80,
+    "n_inner": 60,
+    "density_g_cm3": 1.2,
+    "wall_table_mm": [
+      1.2,
+      1.6,
+      2.0,
+      2.5,
+      3.0
+    ],
+    "target_mass_g": 110.0
+  },
+  "checks": {
+    "outer_valid": true,
+    "outer_volume_mm3": 272717.36033058807,
+    "simpson_volume_mm3": 272660.67505657295,
+    "simpson_rel_err": 0.00020789677133807883,
+    "cavity_valid": true,
+    "body_valid": true
+  },
+  "timings_s": {
+    "airfoil+validate": 0.0020105000003241003,
+    "outer loft": 6.670758208987536,
+    "hollow": 0.4002447089878842,
+    "holes": 0.1197989159845747,
+    "total": 7.21529583298252
+  },
+  "airfoil": {
+    "name": "s1223",
+    "frame": "native frame kept (LE at x=0, TE at (1,0))",
+    "te_cut_x_c": 0.99,
+    "te_gap_c": 0.002518648565273041,
+    "te_gap_root_mm": 0.4155770132700518,
+    "te_gap_tip_mm": 0.2014918852218433,
+    "physical_root_length_mm": 163.35,
+    "physical_tip_length_mm": 79.2,
+    "max_thickness_c": 0.12118601915026322,
+    "max_thickness_x_c": 0.19353383458646617,
+    "max_thickness_root_mm": 19.995693159793433,
+    "max_thickness_tip_mm": 9.694881532021057,
+    "section_area_c2": 0.06487767943880396
+  },
+  "planform": {
+    "area_cm2": 330.75,
+    "taper": 0.48484848484848486,
+    "tip_le_offset_mm": 72.34628195640313,
+    "bbox": {
+      "xmin": -0.011700197228523829,
+      "xmax": 163.36963882559607,
+      "ymin": -0.0829821831632195,
+      "ymax": 270.01963882559613,
+      "zmin": -3.8573108265657505,
+      "zmax": 22.32857815927321,
+      "xlen": 163.3813390228246,
+      "ylen": 270.10262100875934,
+      "zlen": 26.18588898583896
+    }
+  },
+  "holes": [
+    {
+      "name": "fwd",
+      "x": 29.7,
+      "z": 10.14351169982693,
+      "r": 2.1,
+      "r_boss": 4.6,
+      "r_check": 3.1,
+      "x_pct": 18.0,
+      "d_mm": 4.2,
+      "min_clearance": 4.814950275523371,
+      "at_y": 17.5
+    },
+    {
+      "name": "mid",
+      "x": 66.0,
+      "z": 14.092598752156729,
+      "r": 2.1,
+      "r_boss": 4.6,
+      "r_check": 3.1,
+      "x_pct": 40.0,
+      "d_mm": 4.2,
+      "min_clearance": 4.0104425552582175,
+      "at_y": 17.5
+    },
+    {
+      "name": "aft",
+      "x": 107.25,
+      "z": 13.365496912441447,
+      "r": 2.1,
+      "r_boss": 4.6,
+      "r_check": 3.1,
+      "x_pct": 65.0,
+      "d_mm": 4.2,
+      "min_clearance": 0.2388455855249818,
+      "at_y": 17.5
+    }
+  ],
+  "exact": {
+    "body_volume_cm3": 140.5758422933163,
+    "body_area_cm2": 1149.0031852684556,
+    "outer_volume_cm3": 272.71736033058806,
+    "wetted_area_cm2": 704.9071938696454,
+    "mass_g": 168.69101075197955,
+    "solid_mass_g": 327.26083239670567
+  },
+  "wall_table": [
+    {
+      "wall_mm": 1.2,
+      "outer_mm3": 272666.7426790857,
+      "cavity_mm3": 197344.4670788057,
+      "pillars_mm3": 2806.210045415916,
+      "bores_mm3": 623.4490621048944,
+      "body_mm3": 77505.03658359103,
+      "mass_g": 93.00604390030924,
+      "configured": false
+    },
+    {
+      "wall_mm": 1.6,
+      "outer_mm3": 272666.7426790857,
+      "cavity_mm3": 176298.29796143668,
+      "pillars_mm3": 2766.785704042464,
+      "bores_mm3": 623.4490621048944,
+      "body_mm3": 98511.7813595866,
+      "mass_g": 118.21413763150392,
+      "configured": false
+    },
+    {
+      "wall_mm": 2.0,
+      "outer_mm3": 272666.7426790857,
+      "cavity_mm3": 156697.407952642,
+      "pillars_mm3": 2717.193880431584,
+      "bores_mm3": 623.4490621048944,
+      "body_mm3": 118063.07954477039,
+      "mass_g": 141.67569545372447,
+      "configured": false
+    },
+    {
+      "wall_mm": 2.5,
+      "outer_mm3": 272666.7426790857,
+      "cavity_mm3": 134038.6540537999,
+      "pillars_mm3": 2642.2192995689675,
+      "bores_mm3": 623.4490621048944,
+      "body_mm3": 140646.85886274988,
+      "mass_g": 168.77623063529987,
+      "configured": true,
+      "exact_mass_g": 168.69101075197955
+    },
+    {
+      "wall_mm": 3.0,
+      "outer_mm3": 272666.7426790857,
+      "cavity_mm3": 113283.39407677224,
+      "pillars_mm3": 2552.1525004931423,
+      "bores_mm3": 623.4490621048944,
+      "body_mm3": 161312.0520407017,
+      "mass_g": 193.57446244884204,
+      "configured": false
+    }
+  ],
+  "outputs": {
+    "step": "out/wingtip.step",
+    "stl": "out/wingtip.stl",
+    "png": [
+      "out/planform.png",
+      "out/section.png",
+      "out/wingtip_top.png",
+      "out/wingtip_front.png",
+      "out/wingtip_side.png",
+      "out/wingtip_root.png",
+      "out/wingtip_iso.png",
+      "out/wingtip_iso_root.png"
+    ]
+  }
+}

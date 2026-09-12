@@ -1,0 +1,26 @@
+==============================================================================
+WINGTIP REPORT  (s1223, native frame kept (LE at x=0, TE at (1,0)))
+==============================================================================
+planform : root 165 mm, tip 80 mm, span 270 mm, LE sweep 15°, washout 8°, dihedral 0°
+           area 330.8 cm², taper 0.48, tip LE 72.3 mm aft of root LE
+bbox     : x -0.0..163.4  y -0.1..270.0  z -3.9..22.3 mm
+airfoil  : TE cut at 0.990 c -> physical length root 163.35 mm, tip 79.20 mm
+           TE thickness root 0.42 mm, tip 0.20 mm  (!! thin for FDM; consider a larger te_truncate_pct)
+           max thickness 12.1 % c at 19 % c -> 20.0 mm root, 9.7 mm tip
+checks   : outer valid True, cavity valid True, body valid True, loft-vs-Simpson 0.02%
+holes    : (spanwise from the root face, depth 15 mm, boss wall 2.5 mm, validated min wall 1 mm)
+              fwd:  18.0 % c -> x= 29.70 z=10.14 mm, ⌀4.2, min clearance +4.81 mm (at y=17.5)
+              mid:  40.0 % c -> x= 66.00 z=14.09 mm, ⌀4.2, min clearance +4.01 mm (at y=17.5)
+              aft:  65.0 % c -> x=107.25 z=13.37 mm, ⌀4.2, min clearance +0.24 mm (at y=17.5)
+exact    : body volume 140.58 cm³, surface 1149.0 cm², wetted (outer) 704.9 cm², solid-equivalent volume 272.7 cm³
+MASS     : 168.7 g at wall 2.5 mm, TPU 1.2 g/cm³ (fully solid would be 327 g)
+
+wall-thickness trade (2D span integration; target ≤ 110 g):
+    wall  shell vol     mass             note
+    1.20     77.5 cm³    93.0 g  <= target
+    1.60     98.5 cm³   118.2 g
+    2.00    118.1 cm³   141.7 g
+    2.50    140.6 cm³   168.8 g <- configured (OCCT exact 168.7 g)
+    3.00    161.3 cm³   193.6 g
+
+timings  : airfoil+validate 0.0s, outer loft 6.7s, hollow 0.4s, holes 0.1s, total 7.2s
