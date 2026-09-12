@@ -292,7 +292,7 @@ def plot_sections(cfg, foil, root3, tip3, holes: list[dict], path: str | Path, w
     except ValueError as e:
         ax1.text(0.5, 0.4, str(e), transform=ax1.transAxes)
     for h in holes:
-        ax1.add_patch(plt.Circle((h["x"], h["z"]), h["r_boss"], fc="C1", alpha=0.3, ec="none"))
+        ax1.axvspan(h["x"] - h["r_boss"], h["x"] + h["r_boss"], fc="C1", alpha=0.25, ec="none")  # boss web
         ax1.add_patch(plt.Circle((h["x"], h["z"]), h["r"], fc="white", ec="k", lw=1))
         ax1.annotate(
             f"{h['name']}\n{h['min_clearance']:+.1f} mm", (h["x"], h["z"] + h["r_boss"] + 1), fontsize=8, ha="center"
@@ -303,7 +303,7 @@ def plot_sections(cfg, foil, root3, tip3, holes: list[dict], path: str | Path, w
     ax1.set_xlabel("x from LE (mm)")
     ax1.set_ylabel("z (mm)")
     ax1.set_title(
-        "sections in their own frame (untwisted): outer skin, cavity, holes (⌀) with boss (orange), "
+        "sections in their own frame (untwisted): outer skin, cavity, holes (⌀) with boss webs (orange), "
         "annotated min clearance",
         fontsize=9,
     )

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 import numpy as np
-from shapely.geometry import Point
+from shapely.geometry import box
 
 from . import geometry as geo
 from .sections import polygon_xz, section_at
@@ -37,8 +37,8 @@ def shell_volume_2d(
     root_poly = polygon_xz(section_at(root3, tip3, 0.0))
     cav_root = root_poly.buffer(-wall, join_style="mitre", mitre_limit=2.0)
     for h in holes:
-        boss = Point(h["x"], h["z"]).buffer(h["r_boss"], 64)
-        v_pillars += boss.intersection(cav_root).area * (cfg.hole_depth_mm + wall - max(y_start, 0.0))
+        strip = box(h["x"] - h["r_boss"], -1e3, h["x"] + h["r_boss"], 1e3)  # full-height boss web
+        v_pillars += strip.intersection(cav_root).area * (cfg.hole_depth_mm + wall - max(y_start, 0.0))
         v_bores += np.pi * h["r"] ** 2 * (cfg.hole_depth_mm - max(y_start, 0.0))
     v_body = v_outer - v_cavity + v_pillars - v_bores
     return {
@@ -157,7 +157,7 @@ def format_report(rep: dict) -> str:
     )
     L.append(
         f"holes    : (spanwise from the root face, depth {cfg['hole_depth_mm']:g} mm, "
-        f"boss wall {cfg['boss_wall_mm']:g} mm, validated min wall {cfg['hole_min_wall_mm']:g} mm)"
+        f"boss web ±{cfg['boss_wall_mm']:g} mm around each bore, validated min wall {cfg['hole_min_wall_mm']:g} mm)"
     )
     for h in rep["holes"]:
         L.append(
