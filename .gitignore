@@ -1,7 +1,13 @@
 .venv/
+.venv-agentcad/
 __pycache__/
 *.pyc
+*.egg-info/
 .pytest_cache/
+.ruff_cache/
 out/*.step
 out/*.stl
+build/
+.agentcad/
+ci_out/
 .DS_Store
