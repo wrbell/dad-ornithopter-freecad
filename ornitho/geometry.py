@@ -75,6 +75,11 @@ def cylinder_y(cx: float, cz: float, r: float, y0: float, y1: float) -> cq.Solid
     return cq.Solid.makeCylinder(r, y1 - y0, cq.Vector(cx, y0, cz), cq.Vector(0, 1, 0))
 
 
+def slab_y(cx: float, half_width: float, y0: float, y1: float, z_extent: float = 1000.0) -> cq.Solid:
+    """Full-height chordwise slab |x - cx| <= half_width, from y0 to y1 (boss web bridging both skins)."""
+    return cq.Solid.makeBox(2 * half_width, y1 - y0, 2 * z_extent, cq.Vector(cx - half_width, y0, -z_extent))
+
+
 def export(
     shape: cq.Shape,
     step_path: str | Path | None,

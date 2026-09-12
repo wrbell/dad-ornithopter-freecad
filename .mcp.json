@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "agentcad": {
+      "type": "stdio",
+      "command": ".venv-agentcad/bin/python",
+      "args": ["-m", "agentcad.mcp"],
+      "env": {"AGENTCAD_RUN_TIMEOUT_S": "600"}
+    }
+  }
+}

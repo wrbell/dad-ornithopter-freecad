@@ -1,0 +1,2 @@
+# agentcad project config: keep versioned runs, viewers and logs out of the source tree.
+build_dir = "./build"

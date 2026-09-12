@@ -1,11 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ornitho"
+version = "0.1.0"
+description = "Ornithopter CAD: parametric S1223 wingtip (CadQuery build, hole validation, mass report, renders)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "numpy>=2",
+    "shapely>=2.1",
+    "cadquery>=2.7",   # the OpenCascade (cadquery-ocp) pin lives in the requirements files, per venv
+]
+
+[project.optional-dependencies]
+render = ["pyvista>=0.44", "matplotlib>=3.8"]
+dev = ["pytest", "ruff"]
+
+[tool.setuptools]
+packages = ["ornitho"]   # flat layout: tests/, models/, data/, out/ are not packages
+
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-extend-exclude = [".venv", "out", "data"]
+extend-exclude = [".venv", ".venv-agentcad", "build", "out", "data"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "NPY"]
 ignore = ["E731"]
+
+[tool.ruff.lint.per-file-ignores]
+"models/*.py" = ["E402"]   # the PARAMS block deliberately precedes imports (agentcad/CQGI --params contract)
 
 [tool.ruff.lint.isort]
 known-first-party = ["ornitho"]

@@ -100,8 +100,10 @@ def build(cfg: WingConfig, hollow: bool = True, holes: bool = True, wall: float 
         cavity = geo.loft([_inner_wire_at(cfg, f0, t), _inner_wire_at(cfg, f1, t)], ruled=True)
         checks["cavity_valid"] = cavity.isValid()
         if holes:
-            pillars = [geo.cylinder_y(h["x"], h["z"], h["r_boss"], y_start, cfg.hole_depth_mm + t) for h in hole_info]
-            cavity = cavity.cut(*pillars)
+            # Boss = a full-height web |x - cx| <= r_boss subtracted from the cavity, so the material around
+            # every bore always bridges the upper and lower skins (a cylinder can float inside a tall cavity).
+            webs = [geo.slab_y(h["x"], h["r_boss"], y_start, cfg.hole_depth_mm + t) for h in hole_info]
+            cavity = cavity.cut(*webs)
         body = outer.cut(cavity)
         tm["hollow"] = time.perf_counter() - t2
     if holes:
@@ -112,5 +114,9 @@ def build(cfg: WingConfig, hollow: bool = True, holes: bool = True, wall: float 
     checks["body_valid"] = body.isValid()
     if not body.isValid():
         raise RuntimeError("final body is not a valid solid")
+    n_solids = len(body.Solids())
+    checks["solid_count"] = n_solids
+    if n_solids != 1:
+        raise RuntimeError(f"final body has {n_solids} solids: a boss or cap is not connected to the skin")
     tm["total"] = time.perf_counter() - t0
     return WingBuild(cfg, foil, root3, tip3, outer, body, hole_info, checks, tm, tip_foil)

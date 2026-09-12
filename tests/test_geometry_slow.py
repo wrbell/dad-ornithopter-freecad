@@ -17,6 +17,7 @@ def build():
 
 def test_solids_valid_and_loft_matches_simpson(build):
     assert build.checks["outer_valid"] and build.checks["cavity_valid"] and build.checks["body_valid"]
+    assert build.checks["solid_count"] == 1 and len(build.body.Solids()) == 1  # every boss web bridges the skins
     assert build.checks["simpson_rel_err"] < 0.005
 
 

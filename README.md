@@ -1,29 +1,41 @@
-# Ornithopter wingtip — parametric CAD + render loop
+# Ornithopter CAD — parametric wingtip + agent-driven CAD loop
 
-[![ci](https://github.com/wrbell/dad-ornithopter-freecad/actions/workflows/ci.yml/badge.svg)](https://github.com/wrbell/dad-ornithopter-freecad/actions/workflows/ci.yml)
+[![ci](https://github.com/wrbell/ornithopter-cad/actions/workflows/ci.yml/badge.svg)](https://github.com/wrbell/ornithopter-cad/actions/workflows/ci.yml)
 
 Parametric S1223 wingtip (TPU shell, FDM-printed) for an 8-wing flapping-wing (ornithopter) drone.
-Edit the `CONFIG` dict at the top of `wingtip.py`, run it, look at the PNGs, read the mass report.
+Edit the `CONFIG` dict at the top of `wingtip.py`, run it, look at the PNGs, read the mass report. The same
+geometry is exposed to Claude Code through [agentcad](https://agentcad.dev) (versioned runs, previews, measure,
+diff, an A/B viewer, and an MCP server), so the design can be iterated by talking to an agent.
 
-No FreeCAD: geometry is built headless with **CadQuery 2.8 (OCCT 7.9)** from pip, rendered with
-**pyvista** off-screen, 2D work in **numpy + shapely**. Everything lives in this repo except the pip wheels.
+No FreeCAD: geometry is built headless with **CadQuery (OpenCascade)** from pip, rendered with **pyvista**
+off-screen, 2D work in **numpy + shapely**. Everything lives in this repo except the pip wheels.
 
-## Setup (macOS, Apple Silicon; any Python 3.11–3.13 works)
+## Setup (macOS or Linux; Python 3.10–3.12)
 
 ```bash
-python3 -m venv .venv                      # e.g. /Users/willem/anaconda3/bin/python3
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python smoke.py                  # toolchain check: extrudes the root section, exports, renders
-.venv/bin/python -m pytest                 # fast unit tests (no OCCT)
-.venv/bin/python -m pytest -m slow         # real OCCT build checks (~30 s)
+make setup                 # .venv (pipeline) + .venv-agentcad (agentcad CLI + MCP server), ~10 min first time
+make run                   # full build: STEP/STL + PNGs + report
+make test                  # fast unit tests (no OCCT)
+make slow                  # real OCCT build checks (~30 s)
+make agentcad-smoke        # end-to-end check of the agentcad integration
 ```
+
+Two venvs are deliberate. agentcad 0.6 pins the OpenCascade binding to the 7.8 generation; the pipeline runs
+on 7.9. The two binary builds cannot share a venv, and when agentcad moves to 7.9 its own CadQuery extra will
+collide with build123d's VTK-free binding, so keeping them apart is what stays stable. `make setup` builds both;
+you never activate either.
+
+| venv | runs | kernel |
+|---|---|---|
+| `.venv` | `wingtip.py`, tests, pyvista renders, `out/report.txt` | cadquery 2.8 / OCP 7.9 |
+| `.venv-agentcad` | `agentcad` CLI, MCP server, `models/wingtip_agentcad.py` | cadquery 2.7 / OCP 7.8 |
 
 ## Run
 
 ```bash
 .venv/bin/python wingtip.py                                   # build + STEP/STL + PNGs + report
 .venv/bin/python wingtip.py --set wall_thickness_mm=1.6       # override any scalar CONFIG key (repeatable)
-.venv/bin/python wingtip.py --airfoil data/airfoils/other.dat  # any Selig/Lednicer .dat
+.venv/bin/python wingtip.py --airfoil data/airfoils/other.dat  # any Selig/Lednicer .dat, or a UIUC name
 .venv/bin/python wingtip.py --solid                           # outer loft only (fast)
 .venv/bin/python wingtip.py --no-render                       # skip PNGs
 ```
@@ -41,6 +53,33 @@ Outputs in `out/`:
 | `section.png` | root and tip sections with cavity, holes, bosses, min clearances; placed sections showing twist |
 | `planform.png` | LE/TE/quarter-chord, hole positions and depths |
 | `report.txt`, `wingtip_run.json` | mass report, wall-thickness table, all config + checks |
+
+## Using with Claude Code
+
+`docs/HANDOFF.md` is the one-page version for a new machine. In short: `make setup`, then `claude` in this
+folder. The first launch asks to approve the project's `agentcad` MCP server (defined in `.mcp.json`); the
+`agentcad` skill in `.claude/skills/` and the project rules in `CLAUDE.md` are discovered automatically.
+
+Two roles:
+
+| tool | use it for |
+|---|---|
+| `wingtip.py` (`make run`) | the engineering deliverables: STEP/STL, the five renders, the mass and wall-thickness table |
+| agentcad (`make agentcad-run LABEL=x ARGS="--params k=v"`) | fast iteration: versioned runs under `build/`, four-view preview, iso/top/front renders, `measure`, `diff` between versions, `check-spec`, a browser A/B viewer |
+
+Example prompts: "thin the wall to 1.6 mm and show me the root view", "move the aft hole to 58 % chord and
+report the clearances", "compare 6° and 8° washout side by side".
+
+Notes:
+
+- agentcad's `metrics.volume` is OpenCascade's analytic integration, which is about 25 % low on this spline
+  loft; mass always comes from `out/report.txt` (triangulated volume). The model script also emits a 2D mass
+  estimate in the agentcad `warnings` array.
+- agentcad artifacts go to `build/` (gitignored). `make agentcad-import LABEL=x` adopts the main-kernel
+  `out/wingtip.step` as an agentcad version for measuring and diffing.
+- `make agentcad-guide` refreshes the generated skill and the `AGENTS.md` block after upgrading agentcad.
+- Moved or renamed the folder? `rm -rf .venv .venv-agentcad build && make setup`.
+- agentcad is Apache-2.0 and installed from PyPI, not vendored.
 
 ## Coordinate frame
 
@@ -75,8 +114,9 @@ Outputs in `out/`:
   starts 1 mm outside the root face (open root) and stops one wall short of the tip (closed tip cap).
   `root_solid_mm > 0` fills the root instead.
 * Mount holes: spanwise bores from the root face to `hole_depth_mm`, matching the rib's through-holes.
-  Each gets a boss (pillar) of radius `hole r + boss_wall_mm`, made by subtracting the pillar from the cavity
-  before the cavity is subtracted from the skin, so bosses merge with the skin without coincident-face booleans.
+  Each gets a boss web: a full-height slab `hole r + boss_wall_mm` either side of the bore, subtracted from the
+  cavity before the cavity is subtracted from the skin, so every boss bridges both skins (a cylindrical boss
+  can float inside a tall cavity; the build refuses any body that is not a single solid).
 * **Validation (fails loudly):** every hole padded by `hole_min_wall_mm` must sit inside the section outline
   at 7 stations along its depth (the section shrinks, sweeps and twists over the depth). Holes are placed
   on the camber line unless `z_pct` is given (`HoleValidationError` otherwise).
@@ -86,15 +126,18 @@ Outputs in `out/`:
 ## Development
 
 ```bash
-make setup    # venv + deps
+make setup    # both venvs + deps
 make test     # fast unit tests
 make slow     # OCCT build tests
 make lint     # ruff
 make run      # full build
+make agentcad-dry LABEL=v1 / agentcad-run LABEL=v1 / agentcad-smoke / agentcad-guide / agentcad-reset
 ```
-CI (GitHub Actions) runs lint, the fast suite and the OCCT suite on every push.
+CI (GitHub Actions) runs lint, the fast suite, the OCCT suite and a headless default build in one job, and the
+agentcad contract check (`smoke_agentcad.py`) in a second job.
 
 ## Loop
 
-1. edit `CONFIG` → 2. `python wingtip.py` → 3. look at `out/*.png` → 4. read `out/report.txt` → repeat.
-Every render is regenerated on every run; the title line of each PNG carries the key parameters.
+1. edit `CONFIG` (or ask Claude) → 2. `make run` or `make agentcad-run` → 3. look at the PNGs → 4. read
+`out/report.txt` → repeat. Every render is regenerated on every run; the title line of each PNG carries the key
+parameters.

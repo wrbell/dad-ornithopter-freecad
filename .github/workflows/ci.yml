@@ -31,3 +31,33 @@ jobs:
         run: python -m pytest -q -m slow
       - name: Build the default wingtip (no render)
         run: python wingtip.py --no-render --out ci_out && cat ci_out/report.txt
+
+  agentcad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-agentcad.txt
+      - name: System libraries for OCCT / VTK import (headless)
+        run: sudo apt-get update -q && sudo apt-get install -y -q libgl1 libglu1-mesa libxrender1 libxext6
+      - name: Install the agentcad toolchain
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-agentcad.txt
+          python -c "import agentcad, cadquery, build123d, ornitho.wing; print('agentcad', agentcad.__version__, '/ cadquery', cadquery.__version__)"
+      - name: Initialise the agentcad project
+        run: agentcad init --name ci --runtime cadquery --no-agent-setup
+      - name: agentcad contract check (dry run, core-only run, check-spec, failure cases)
+        run: python smoke_agentcad.py --agentcad agentcad
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agentcad-build
+          path: |
+            build/**/*.json
+            build/**/*.step
+          if-no-files-found: ignore

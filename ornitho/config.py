@@ -45,7 +45,7 @@ class WingConfig:
         default_factory=lambda: [Hole("fwd", 18.0, 4.2), Hole("mid", 40.0, 4.2), Hole("aft", 65.0, 4.2)]
     )
     hole_depth_mm: float = 15.0
-    boss_wall_mm: float | None = None  # boss radius = hole r + this (clipped by the skin); None = wall_thickness_mm
+    boss_wall_mm: float | None = None  # boss web half-width = hole r + this; None = wall_thickness_mm
     hole_min_wall_mm: float = 1.0  # VALIDATED minimum material between hole edge and outer skin
     root_solid_mm: float = 0.0  # solid block at the root (0 = open root face)
     n_per_surface: int = 80
