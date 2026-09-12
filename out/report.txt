@@ -23,4 +23,4 @@ wall-thickness trade (2D span integration; target ≤ 110 g):
     2.50    140.6 cm³   168.8 g <- configured (OCCT exact 168.7 g)
     3.00    161.3 cm³   193.6 g
 
-timings  : airfoil+validate 0.0s, outer loft 6.7s, hollow 0.4s, holes 0.1s, total 7.2s
+timings  : airfoil+validate 0.0s, outer loft 5.6s, hollow 0.4s, holes 0.1s, total 6.2s

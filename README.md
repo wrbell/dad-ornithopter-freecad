@@ -1,6 +1,6 @@
 # Ornithopter wingtip — parametric CAD + render loop
 
-Parametric S1223 wingtip (TPU shell, FDM-printed) for an 8-wing flapping drone.
+Parametric S1223 wingtip (TPU shell, FDM-printed) for an 8-wing flapping-wing (ornithopter) drone.
 Edit the `CONFIG` dict at the top of `wingtip.py`, run it, look at the PNGs, read the mass report.
 
 No FreeCAD: geometry is built headless with **CadQuery 2.8 (OCCT 7.9)** from pip, rendered with
@@ -21,7 +21,7 @@ python3 -m venv .venv                      # e.g. /Users/willem/anaconda3/bin/py
 ```bash
 .venv/bin/python wingtip.py                                   # build + STEP/STL + PNGs + report
 .venv/bin/python wingtip.py --set wall_thickness_mm=1.6       # override any scalar CONFIG key (repeatable)
-.venv/bin/python wingtip.py --airfoil data/airfoils/my_mod.dat # swap in the SolidWorks .dat
+.venv/bin/python wingtip.py --airfoil data/airfoils/other.dat  # any Selig/Lednicer .dat
 .venv/bin/python wingtip.py --solid                           # outer loft only (fast)
 .venv/bin/python wingtip.py --no-render                       # skip PNGs
 ```
@@ -30,7 +30,7 @@ Outputs in `out/`:
 
 | file | what |
 |---|---|
-| `wingtip.step`, `wingtip.stl` | for SolidWorks / slicer (STL at 0.02 mm, binary; gitignored) |
+| `wingtip.step`, `wingtip.stl` | for any CAD package / slicer (STL at 0.02 mm, binary; gitignored) |
 | `wingtip_top.png` | planform, looking down: LE at top, span to the right; root/tip outlines + quarter-chord overlaid |
 | `wingtip_front.png` | from the nose: span, dihedral, thickness taper |
 | `wingtip_side.png` | from the tip looking inboard: profile, washout |
@@ -50,7 +50,7 @@ Outputs in `out/`:
 
 ## Airfoil handling (`ornitho/airfoil.py`)
 
-* Loader accepts Selig (UIUC), Lednicer (with/without count line), and SolidWorks 3-column exports,
+* Loader accepts Selig (UIUC), Lednicer (with/without count line), and 3-column XYZ exports,
   in any start point, direction, units or rotation. The **file's frame is kept exactly** when the TE is at
   (1, 0) and the nose at x ≈ 0 (stock S1223), only scaled when it is in mm, and re-fitted (LE → origin,
   TE → (1, 0)) otherwise; the report says which happened.
@@ -60,8 +60,8 @@ Outputs in `out/`:
   0.42 mm TE at root and 0.20 mm at the tip.
 * `gurney_flap_pct` adds a tab hanging down from the lower TE corner, `gurney_thickness_mm` thick (absolute,
   so it is the same thickness at root and tip).
-* To swap in your modified airfoil: drop the `.dat` in `data/airfoils/` and set `"airfoil"` (or `--airfoil`).
-  If your export already has the blunt TE, set `te_truncate_pct` to 0.
+* To try another airfoil: drop the `.dat` in `data/airfoils/` and set `"airfoil"` (or `--airfoil`); any UIUC
+  name is also fetched automatically. If a file already has a blunt TE, set `te_truncate_pct` to 0.
 
 ## Geometry (`ornitho/geometry.py`, `ornitho/wing.py`)
 
@@ -80,6 +80,17 @@ Outputs in `out/`:
   on the camber line unless `z_pct` is given (`HoleValidationError` otherwise).
 * Mass properties use a fine triangulation. OCCT's analytic `Shape.Volume()` was measured ~25 % low on these
   spline solids and is not used.
+
+## Development
+
+```bash
+make setup    # venv + deps
+make test     # fast unit tests
+make slow     # OCCT build tests
+make lint     # ruff
+make run      # full build
+```
+CI (GitHub Actions) runs lint, the fast suite and the OCCT suite on every push.
 
 ## Loop
 

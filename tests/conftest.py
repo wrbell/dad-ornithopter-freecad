@@ -1,4 +1,5 @@
 """Analytic NACA 4-digit generator + .dat writers in every format we must accept."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -58,8 +59,9 @@ def dat_writer(tmp_path):
         elif fmt_name == "selig_closed":
             text = "NACA 2412\n" + fmt(np.vstack([loop, loop[:1]]))
         elif fmt_name == "lednicer":
-            text = ("NACA 2412 AIRFOIL\n\n" + f"{len(upper):5.1f}   {len(lower):5.1f}\n\n"
-                    + fmt(upper) + "\n" + fmt(lower))
+            text = (
+                "NACA 2412 AIRFOIL\n\n" + f"{len(upper):5.1f}   {len(lower):5.1f}\n\n" + fmt(upper) + "\n" + fmt(lower)
+            )
         elif fmt_name == "lednicer_nocount":
             text = "NACA 2412\n" + fmt(upper) + fmt(lower)
         elif fmt_name == "three_col":

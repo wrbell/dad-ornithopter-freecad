@@ -10,6 +10,7 @@ translate to (x_le(f), y, z_dihedral(f)). Sections therefore stay in planes
 y = const, and a ruled loft between root and tip realises exactly
 section_at(f) = (1 - f) * root + f * tip.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -28,7 +29,7 @@ class Planform:
     washout_deg: float = 0.0
     dihedral_deg: float = 0.0
 
-    def station(self, f: float) -> "Station":
+    def station(self, f: float) -> Station:
         return Station(
             f=f,
             y=f * self.span,

@@ -1,4 +1,5 @@
 """Assemble the wingtip: airfoil -> placed sections -> lofts -> hollow -> bosses/holes."""
+
 from __future__ import annotations
 
 import time
@@ -16,11 +17,11 @@ from .config import WingConfig
 @dataclass
 class WingBuild:
     cfg: WingConfig
-    foil: af.Airfoil                 # root-station airfoil
+    foil: af.Airfoil  # root-station airfoil
     root3: np.ndarray
     tip3: np.ndarray
-    outer: object                    # cq.Solid
-    body: object                     # cq.Solid (hollow + holes)
+    outer: object  # cq.Solid
+    body: object  # cq.Solid (hollow + holes)
     holes: list = field(default_factory=list)
     checks: dict = field(default_factory=dict)
     timings: dict = field(default_factory=dict)
@@ -28,9 +29,11 @@ class WingBuild:
 
     def overlays(self) -> dict[str, np.ndarray]:
         pf = self.cfg.planform()
-        return {"root outline": np.vstack([self.root3, self.root3[:1]]),
-                "tip outline": np.vstack([self.tip3, self.tip3[:1]]),
-                "quarter chord": pf.quarter_chord_line()}
+        return {
+            "root outline": np.vstack([self.root3, self.root3[:1]]),
+            "tip outline": np.vstack([self.tip3, self.tip3[:1]]),
+            "quarter chord": pf.quarter_chord_line(),
+        }
 
 
 def load_airfoil(cfg: WingConfig, chord_mm: float | None = None) -> af.Airfoil:
@@ -39,8 +42,13 @@ def load_airfoil(cfg: WingConfig, chord_mm: float | None = None) -> af.Airfoil:
     if not str(path).endswith(".dat"):
         path = af.fetch(str(path))
     chord = cfg.root_chord_mm if chord_mm is None else chord_mm
-    return af.load(path, te_truncate_pct=cfg.te_truncate_pct, n_per_surface=cfg.n_per_surface,
-                   gurney_pct=cfg.gurney_flap_pct, gurney_thickness=cfg.gurney_thickness_mm / chord)
+    return af.load(
+        path,
+        te_truncate_pct=cfg.te_truncate_pct,
+        n_per_surface=cfg.n_per_surface,
+        gurney_pct=cfg.gurney_flap_pct,
+        gurney_thickness=cfg.gurney_thickness_mm / chord,
+    )
 
 
 def placed_sections(cfg: WingConfig, root_foil: af.Airfoil, tip_foil: af.Airfoil) -> tuple[np.ndarray, np.ndarray]:
@@ -77,8 +85,12 @@ def build(cfg: WingConfig, hollow: bool = True, holes: bool = True, wall: float 
     if rel > 0.005:
         raise RuntimeError(f"outer loft volume {v_outer:.0f} differs from Simpson {v_simpson:.0f} by {rel:.1%}")
     tm["outer loft"] = time.perf_counter() - t1
-    checks = {"outer_valid": outer.isValid(), "outer_volume_mm3": v_outer, "simpson_volume_mm3": v_simpson,
-              "simpson_rel_err": rel}
+    checks = {
+        "outer_valid": outer.isValid(),
+        "outer_volume_mm3": v_outer,
+        "simpson_volume_mm3": v_simpson,
+        "simpson_rel_err": rel,
+    }
 
     body = outer
     y_start = -1.0 if cfg.root_solid_mm <= 0 else cfg.root_solid_mm

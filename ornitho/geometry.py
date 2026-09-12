@@ -3,6 +3,7 @@
 Everything here takes already-placed 3D point arrays (see sections.py); no
 airfoil or planform logic lives in this module.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -36,9 +37,9 @@ def inner_wire(upper3: np.ndarray, lower3: np.ndarray, tol: float = 1e-6) -> cq.
 
     If the tail points differ (flat inner TE) a closing line is added.
     """
-    up = _vecs(upper3[::-1])          # tail -> nose
-    lo = _vecs(lower3)                # nose -> tail
-    lo[0] = up[-1]                    # share the exact nose vertex
+    up = _vecs(upper3[::-1])  # tail -> nose
+    lo = _vecs(lower3)  # nose -> tail
+    lo[0] = up[-1]  # share the exact nose vertex
     edges = [cq.Edge.makeSpline(up, periodic=False), cq.Edge.makeSpline(lo, periodic=False)]
     if (lo[-1] - up[0]).Length > tol:
         edges.append(cq.Edge.makeLine(lo[-1], up[0]))
@@ -74,8 +75,13 @@ def cylinder_y(cx: float, cz: float, r: float, y0: float, y1: float) -> cq.Solid
     return cq.Solid.makeCylinder(r, y1 - y0, cq.Vector(cx, y0, cz), cq.Vector(0, 1, 0))
 
 
-def export(shape: cq.Shape, step_path: str | Path | None, stl_path: str | Path | None,
-           stl_tol: float = 0.02, stl_ang: float = 0.1) -> None:
+def export(
+    shape: cq.Shape,
+    step_path: str | Path | None,
+    stl_path: str | Path | None,
+    stl_tol: float = 0.02,
+    stl_ang: float = 0.1,
+) -> None:
     if step_path:
         Path(step_path).parent.mkdir(parents=True, exist_ok=True)
         shape.exportStep(str(step_path))
@@ -91,10 +97,17 @@ def tessellate(shape: cq.Shape, tol: float = 0.05, ang: float = 0.1) -> tuple[np
 
 def bbox(shape: cq.Shape) -> dict[str, float]:
     b = shape.BoundingBox()
-    return {"xmin": b.xmin, "xmax": b.xmax, "ymin": b.ymin, "ymax": b.ymax, "zmin": b.zmin, "zmax": b.zmax,
-            "xlen": b.xlen, "ylen": b.ylen, "zlen": b.zlen}
-
-
+    return {
+        "xmin": b.xmin,
+        "xmax": b.xmax,
+        "ymin": b.ymin,
+        "ymax": b.ymax,
+        "zmin": b.zmin,
+        "zmax": b.zmax,
+        "xlen": b.xlen,
+        "ylen": b.ylen,
+        "zlen": b.zlen,
+    }
 
 
 # --------------------------------------------------------------------------- #

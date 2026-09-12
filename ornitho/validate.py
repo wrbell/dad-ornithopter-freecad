@@ -1,4 +1,5 @@
 """Pre-flight geometric checks that must pass before any OCCT work starts."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -19,9 +20,18 @@ def hole_centres(cfg, foil) -> list[dict]:
             z = float(foil.camber(h.x_pct / 100.0)) * cfg.root_chord_mm
         else:
             z = h.z_pct / 100.0 * cfg.root_chord_mm
-        out.append({"name": h.name, "x": x, "z": z, "r": h.d_mm / 2.0,
-                    "r_boss": h.d_mm / 2.0 + cfg.boss_wall_mm,
-                    "r_check": h.d_mm / 2.0 + cfg.hole_min_wall_mm, "x_pct": h.x_pct, "d_mm": h.d_mm})
+        out.append(
+            {
+                "name": h.name,
+                "x": x,
+                "z": z,
+                "r": h.d_mm / 2.0,
+                "r_boss": h.d_mm / 2.0 + cfg.boss_wall_mm,
+                "r_check": h.d_mm / 2.0 + cfg.hole_min_wall_mm,
+                "x_pct": h.x_pct,
+                "d_mm": h.d_mm,
+            }
+        )
     return out
 
 
@@ -47,14 +57,17 @@ def check_holes(cfg, foil, root3: np.ndarray, tip3: np.ndarray, n_stations: int 
             if not inside:
                 problems.append(
                     f"hole '{h['name']}' ({h['x_pct']:.1f} % c, d={h['d_mm']:g} mm + {cfg.hole_min_wall_mm:g} mm wall) "
-                    f"breaches the section at y={f * cfg.span_mm:.1f} mm: clearance {clearance:+.2f} mm")
+                    f"breaches the section at y={f * cfg.span_mm:.1f} mm: clearance {clearance:+.2f} mm"
+                )
                 break
     for i in range(len(holes)):
         for j in range(i + 1, len(holes)):
             a, b = holes[i], holes[j]
             gap = np.hypot(a["x"] - b["x"], a["z"] - b["z"]) - a["r_check"] - b["r_check"]
             if gap < 0:
-                problems.append(f"holes '{a['name']}' and '{b['name']}' are too close (overlap {-gap:.2f} mm incl. min wall)")
+                problems.append(
+                    f"holes '{a['name']}' and '{b['name']}' are too close (overlap {-gap:.2f} mm incl. min wall)"
+                )
     if problems:
         raise HoleValidationError("mount hole validation failed:\n  " + "\n  ".join(problems))
     return holes

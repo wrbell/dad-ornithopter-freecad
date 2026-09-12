@@ -1,11 +1,12 @@
 """Airfoil coordinate loading, normalisation and pre-processing.
 
 Pure numpy. Handles Selig (TE -> upper -> LE -> lower -> TE), Lednicer
-(two LE -> TE arcs with or without a count line) and SolidWorks-style
-3-column exports, in any start point / direction / rotation.
+(two LE -> TE arcs with or without a count line) and 3-column XYZ exports,
+in any start point / direction / rotation.
 
 All public geometry is at *unit chord*: LE at (0, 0), nominal TE at (1, 0).
 """
+
 from __future__ import annotations
 
 import re
@@ -61,24 +62,21 @@ def parse_dat(path: str | Path) -> np.ndarray:
     ncol = min(len(r) for r in rows)
     arr = np.array([r[:ncol] for r in rows], dtype=float)
     if ncol >= 3:
-        # SolidWorks XYZ export: keep the two columns that actually vary.
+        # XYZ export (e.g. from a CAD sketch): keep the two columns that actually vary.
         var = arr.var(axis=0)
         keep = sorted(np.argsort(var)[-2:])
         arr = arr[:, keep]
     arr = arr[:, :2]
 
     first = arr[0]
-    is_count_line = (
-        np.all(first > 1.0)
-        and np.all(np.abs(first - np.round(first)) < 1e-9)
-    )
+    is_count_line = np.all(first > 1.0) and np.all(np.abs(first - np.round(first)) < 1e-9)
     if is_count_line:  # Lednicer with count line
         n_u, n_l = int(round(first[0])), int(round(first[1]))
         pts = arr[1:]
         if len(pts) < n_u + n_l:
             raise ValueError(f"{path}: Lednicer header says {n_u}+{n_l} points, found {len(pts)}")
-        upper = pts[:n_u]          # LE -> TE
-        lower = pts[n_u:n_u + n_l]  # LE -> TE
+        upper = pts[:n_u]  # LE -> TE
+        lower = pts[n_u : n_u + n_l]  # LE -> TE
         return _arcs_to_loop(upper, lower)
 
     # Lednicer without count line: two LE->TE arcs -> a big jump in x mid-file.
@@ -115,8 +113,9 @@ def _dedupe(p: np.ndarray, tol: float) -> np.ndarray:
 @dataclass
 class Frame:
     """How the input coordinates were brought to unit chord."""
-    mode: str            # "native" | "scaled" | "refit"
-    scale: float         # divisor applied to the input units
+
+    mode: str  # "native" | "scaled" | "refit"
+    scale: float  # divisor applied to the input units
     rotation_deg: float  # rotation applied (0 unless refit)
     shift: tuple[float, float]  # translation applied in INPUT units (0 unless refit)
     blunt_te: bool
@@ -126,8 +125,10 @@ class Frame:
             return "native frame kept (LE at x=0, TE at (1,0))"
         if self.mode == "scaled":
             return f"scaled by 1/{self.scale:.6g} (input units -> unit chord), no rotation"
-        return (f"re-fitted: shift ({self.shift[0]:.4g}, {self.shift[1]:.4g}), "
-                f"rotation {self.rotation_deg:+.3f} deg, scale 1/{self.scale:.6g}")
+        return (
+            f"re-fitted: shift ({self.shift[0]:.4g}, {self.shift[1]:.4g}), "
+            f"rotation {self.rotation_deg:+.3f} deg, scale 1/{self.scale:.6g}"
+        )
 
 
 def normalize(loop: np.ndarray) -> tuple[np.ndarray, np.ndarray, Frame]:
@@ -202,11 +203,16 @@ def normalize(loop: np.ndarray) -> tuple[np.ndarray, np.ndarray, Frame]:
         ax = ax / scale
         R = np.array([[ax[0], ax[1]], [-ax[1], ax[0]]])  # rotates ax onto +x
         q = (loop2 - le) @ R.T / scale
-        frame = Frame("refit", scale, float(np.degrees(np.arctan2(ax[1], ax[0]))),
-                      (float(-le[0]), float(-le[1])), te_b is not None)
+        frame = Frame(
+            "refit",
+            scale,
+            float(np.degrees(np.arctan2(ax[1], ax[0]))),
+            (float(-le[0]), float(-le[1])),
+            te_b is not None,
+        )
 
     arc1 = q[: k_le + 1][::-1]  # LE -> TE
-    arc2 = q[k_le:]             # LE -> TE
+    arc2 = q[k_le:]  # LE -> TE
     if arc1[:, 1].mean() >= arc2[:, 1].mean():
         upper, lower = arc1, arc2
     else:
@@ -241,9 +247,7 @@ def truncate_te(upper: np.ndarray, lower: np.ndarray, pct: float) -> tuple[np.nd
         upper, lower = _clip_surface(upper, x_cut), _clip_surface(lower, x_cut)
     gap = np.linalg.norm(upper[-1] - lower[-1])
     if gap < 1e-5:
-        raise ValueError(
-            "sharp trailing edge is unsupported by the loft; set te_truncate_pct > 0"
-        )
+        raise ValueError("sharp trailing edge is unsupported by the loft; set te_truncate_pct > 0")
     return upper, lower
 
 
@@ -299,26 +303,26 @@ class Airfoil:
         return np.vstack([o, o[:1]])
 
     def te_gap(self) -> float:
-        u, l = self._surfaces()
-        return float(np.linalg.norm(u[-1] - l[-1]))
+        u, lo = self._surfaces()
+        return float(np.linalg.norm(u[-1] - lo[-1]))
 
     def x_te(self) -> float:
         return float(0.5 * (self.upper[-1, 0] + self.lower[-1, 0]))
 
     def _surfaces(self):
-        l = self.lower[: len(self.lower) - self.n_corners] if self.n_corners else self.lower
-        return self.upper, l
+        lo = self.lower[: len(self.lower) - self.n_corners] if self.n_corners else self.lower
+        return self.upper, lo
 
     def camber(self, x: float | np.ndarray) -> np.ndarray:
         """Mid-thickness y at chord fraction x (from the unit-chord LE)."""
-        u, l = self._surfaces()
+        u, lo = self._surfaces()
         yu = np.interp(x, u[:, 0], u[:, 1])
-        yl = np.interp(x, l[:, 0], l[:, 1])
+        yl = np.interp(x, lo[:, 0], lo[:, 1])
         return 0.5 * (yu + yl)
 
     def thickness(self, x: float | np.ndarray) -> np.ndarray:
-        u, l = self._surfaces()
-        return np.interp(x, u[:, 0], u[:, 1]) - np.interp(x, l[:, 0], l[:, 1])
+        u, lo = self._surfaces()
+        return np.interp(x, u[:, 0], u[:, 1]) - np.interp(x, lo[:, 0], lo[:, 1])
 
     def max_thickness(self) -> tuple[float, float]:
         xs = np.linspace(0.0, self.x_te(), 400)

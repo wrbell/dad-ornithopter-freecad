@@ -56,11 +56,11 @@ def test_section_at_and_area(pf, s1223):
 
 def test_inset_uniform_wall(s1223):
     out = s1223.outline() * 165
-    u, l = sec.inset(out, 2.5)
-    assert u.shape == (60, 2) and l.shape == (60, 2)
-    assert np.allclose(u[0], l[0])          # shared nose
-    assert np.allclose(u[-1], l[-1])        # collapsed tail cusp (TE thinner than 5 mm)
-    inner = Polygon(sec.inner_outline(u, l))
+    u, lo = sec.inset(out, 2.5)
+    assert u.shape == (60, 2) and lo.shape == (60, 2)
+    assert np.allclose(u[0], lo[0])  # shared nose
+    assert np.allclose(u[-1], lo[-1])  # collapsed tail cusp (TE thinner than 5 mm)
+    inner = Polygon(sec.inner_outline(u, lo))
     outer = Polygon(out)
     assert inner.is_valid and outer.contains(inner)
     # every inner vertex is ~t from the outer boundary (mitre corners excepted)

@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: System libraries for OCCT / VTK (headless)
+        run: sudo apt-get update -q && sudo apt-get install -y -q libgl1 libglu1-mesa libxrender1 libxext1 libxcursor1 libxft2 libxinerama1 libxi6 libxrandr2 libsm6
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Fast tests
+        run: python -m pytest -q
+      - name: OCCT geometry tests
+        run: python -m pytest -q -m slow
+      - name: Build the default wingtip (no render)
+        run: python wingtip.py --no-render --out ci_out && cat ci_out/report.txt

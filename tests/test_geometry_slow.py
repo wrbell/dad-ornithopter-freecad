@@ -1,4 +1,5 @@
 """Real OCCT build of the default wingtip. Run with: pytest -m slow"""
+
 import numpy as np
 import pytest
 

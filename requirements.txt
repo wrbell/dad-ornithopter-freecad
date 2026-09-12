@@ -1,6 +1,10 @@
+# Pinned to the versions verified on macOS arm64 / Python 3.11 (2026-09). Loosen if you must.
 cadquery==2.8.0
-shapely>=2.0
-pyvista>=0.49
-numpy
-matplotlib
-pytest
+cadquery-ocp==7.9.3.1.1
+shapely==2.1.2
+pyvista==0.49.0
+vtk==9.6.2
+numpy==2.4.6
+matplotlib==3.11.2
+pytest==9.1.1
+ruff==0.15.0

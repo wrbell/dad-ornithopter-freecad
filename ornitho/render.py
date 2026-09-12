@@ -1,4 +1,5 @@
 """Rendering: 2D diagnostic plots (matplotlib) and 3D views (pyvista, matplotlib fallback)."""
+
 from __future__ import annotations
 
 import os
@@ -13,8 +14,13 @@ import numpy as np  # noqa: E402
 os.environ.setdefault("PYVISTA_OFF_SCREEN", "true")
 
 
-def plot_airfoil(airfoil, path: str | Path, raw_loop: np.ndarray | None = None,
-                 chord_mm: float | None = None, title: str | None = None) -> Path:
+def plot_airfoil(
+    airfoil,
+    path: str | Path,
+    raw_loop: np.ndarray | None = None,
+    chord_mm: float | None = None,
+    title: str | None = None,
+) -> Path:
     """Unit-chord section plot: processed outline (and the raw file points if given)."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -33,8 +39,10 @@ def plot_airfoil(airfoil, path: str | Path, raw_loop: np.ndarray | None = None,
     ax.grid(True, alpha=0.3)
     ax.legend(loc="upper right", fontsize=8)
     xm, tm = airfoil.max_thickness()
-    info = (f"{airfoil.name}: x_te={airfoil.x_te():.3f}, TE gap={airfoil.te_gap():.4f} c, "
-            f"max t={tm:.4f} c @ x={xm:.3f}, area={airfoil.area():.5f} c²")
+    info = (
+        f"{airfoil.name}: x_te={airfoil.x_te():.3f}, TE gap={airfoil.te_gap():.4f} c, "
+        f"max t={tm:.4f} c @ x={xm:.3f}, area={airfoil.area():.5f} c²"
+    )
     if chord_mm:
         info += f"  |  at {chord_mm:g} mm: TE gap {airfoil.te_gap() * chord_mm:.2f} mm, max t {tm * chord_mm:.1f} mm"
     ax.set_title(title or info, fontsize=10)
@@ -73,19 +81,26 @@ VIEW_NOTES = {
 def _views(center, D):
     c = np.asarray(center)
     return {
-        "top":   (c + [0, 0, 3 * D], (-1, 0, 0), True),
+        "top": (c + [0, 0, 3 * D], (-1, 0, 0), True),
         "front": (c + [-3 * D, 0, 0], (0, 0, 1), True),
-        "side":  (c + [0, 3 * D, 0], (0, 0, 1), True),
-        "root":  (c + [0, -3 * D, 0], (0, 0, 1), True),
-        "iso":   (c + D * np.array([-1.2, 1.4, 0.9]), (0, 0, 1), False),
+        "side": (c + [0, 3 * D, 0], (0, 0, 1), True),
+        "root": (c + [0, -3 * D, 0], (0, 0, 1), True),
+        "iso": (c + D * np.array([-1.2, 1.4, 0.9]), (0, 0, 1), False),
         "iso_root": (c + D * np.array([-0.35, -1.5, 0.45]), (0, 0, 1), False),
     }
 
 
-def render_views(verts: np.ndarray, tris: np.ndarray, out_dir: str | Path, prefix: str = "wingtip",
-                 overlays: dict[str, np.ndarray] | None = None, title: str = "",
-                 views: list[str] | None = None, size=(1600, 1000),
-                 overlay_views: tuple[str, ...] = ("top",)) -> list[Path]:
+def render_views(
+    verts: np.ndarray,
+    tris: np.ndarray,
+    out_dir: str | Path,
+    prefix: str = "wingtip",
+    overlays: dict[str, np.ndarray] | None = None,
+    title: str = "",
+    views: list[str] | None = None,
+    size=(1600, 1000),
+    overlay_views: tuple[str, ...] = ("top",),
+) -> list[Path]:
     """Render named views of a triangle mesh to PNG. pyvista first, matplotlib fallback."""
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -116,8 +131,9 @@ def _render_pyvista(verts, tris, out_dir, prefix, overlays, title, views, size, 
         pl = pv.Plotter(off_screen=True, window_size=list(size))
         pl.set_background("white")
         # split_sharp_edges: smooth shading without vertex-normal smearing across silhouettes
-        pl.add_mesh(mesh, color="lightsteelblue", smooth_shading=True, split_sharp_edges=True,
-                    feature_angle=20, specular=0.3)
+        pl.add_mesh(
+            mesh, color="lightsteelblue", smooth_shading=True, split_sharp_edges=True, feature_angle=20, specular=0.3
+        )
         if name in overlay_views:
             for oname, pts in overlays.items():
                 pts = np.asarray(pts, float).copy()
@@ -127,12 +143,29 @@ def _render_pyvista(verts, tris, out_dir, prefix, overlays, title, views, size, 
                 pl.add_mesh(pv.lines_from_points(pts, close=False), color=col, line_width=3)
         pl.add_axes(xlabel="x aft", ylabel="y span", zlabel="z up")
         try:
-            pl.show_bounds(xtitle="x aft (mm)", ytitle="y span (mm)", ztitle="z up (mm)", font_size=6,
-                           color="black", grid=False, location="outer", n_xlabels=5, n_ylabels=5, n_zlabels=2,
-                           use_3d_text=False)
+            pl.show_bounds(
+                xtitle="x aft (mm)",
+                ytitle="y span (mm)",
+                ztitle="z up (mm)",
+                font_size=6,
+                color="black",
+                grid=False,
+                location="outer",
+                n_xlabels=5,
+                n_ylabels=5,
+                n_zlabels=2,
+                use_3d_text=False,
+            )
         except TypeError:  # older pyvista
-            pl.show_bounds(xtitle="x aft (mm)", ytitle="y span (mm)", ztitle="z up (mm)", font_size=10,
-                           color="black", grid=False, location="outer")
+            pl.show_bounds(
+                xtitle="x aft (mm)",
+                ytitle="y span (mm)",
+                ztitle="z up (mm)",
+                font_size=10,
+                color="black",
+                grid=False,
+                location="outer",
+            )
         pl.add_text(f"{name.upper()} — {VIEW_NOTES[name]}\n{title}", font_size=11, color="black")
         pl.camera_position = [tuple(pos), tuple(center), up]
         if parallel:
@@ -157,17 +190,26 @@ def _render_mpl(verts, tris, out_dir, prefix, overlays, title, views):
     for name in views:
         fig = plt.figure(figsize=(12, 7.5))
         ax = fig.add_subplot(111, projection="3d")
-        pc = Poly3DCollection(verts[tris], facecolor="lightsteelblue", edgecolor="none", shade=True,
-                              lightsource=matplotlib.colors.LightSource(azdeg=225, altdeg=45))
+        pc = Poly3DCollection(
+            verts[tris],
+            facecolor="lightsteelblue",
+            edgecolor="none",
+            shade=True,
+            lightsource=matplotlib.colors.LightSource(azdeg=225, altdeg=45),
+        )
         ax.add_collection3d(pc)
         for oname, pts in overlays.items():
             pts = np.asarray(pts)
             ax.plot(pts[:, 0], pts[:, 1], pts[:, 2], color="red" if "quarter" in oname else "black", lw=2)
-        ax.set_xlim(lo[0], hi[0]); ax.set_ylim(lo[1], hi[1]); ax.set_zlim(lo[2], hi[2])
+        ax.set_xlim(lo[0], hi[0])
+        ax.set_ylim(lo[1], hi[1])
+        ax.set_zlim(lo[2], hi[2])
         ax.set_box_aspect(hi - lo)
         ax.set_proj_type("ortho" if name != "iso" else "persp")
         ax.view_init(*angles[name])
-        ax.set_xlabel("x aft (mm)"); ax.set_ylabel("y span (mm)"); ax.set_zlabel("z up (mm)")
+        ax.set_xlabel("x aft (mm)")
+        ax.set_ylabel("y span (mm)")
+        ax.set_zlabel("z up (mm)")
         ax.set_title(f"{name.upper()} — {VIEW_NOTES[name]}\n{title}", fontsize=10)
         p = out_dir / f"{prefix}_{name}.png"
         fig.savefig(p, dpi=130)
@@ -193,9 +235,19 @@ def plot_planform(cfg, holes: list[dict], path: str | Path) -> Path:
     ax.plot(qc[:, 1], qc[:, 0], "--", color="red", lw=1, label="quarter chord (twist axis)")
     for h in holes:
         ax.plot([0, cfg.hole_depth_mm], [h["x"], h["x"]], "-", color="C1", lw=3, alpha=0.7)
-        ax.add_patch(plt.Rectangle((0, h["x"] - h["r_boss"]), cfg.hole_depth_mm + cfg.wall_thickness_mm,
-                                   2 * h["r_boss"], fc="C1", alpha=0.25, ec="none"))
-        ax.annotate(f"{h['name']} {h['x_pct']:g}% ⌀{h['d_mm']:g}", (cfg.hole_depth_mm + 3, h["x"]), fontsize=8, va="center")
+        ax.add_patch(
+            plt.Rectangle(
+                (0, h["x"] - h["r_boss"]),
+                cfg.hole_depth_mm + cfg.wall_thickness_mm,
+                2 * h["r_boss"],
+                fc="C1",
+                alpha=0.25,
+                ec="none",
+            )
+        )
+        ax.annotate(
+            f"{h['name']} {h['x_pct']:g}% ⌀{h['d_mm']:g}", (cfg.hole_depth_mm + 3, h["x"]), fontsize=8, va="center"
+        )
     ax.set_xlim(-10, cfg.span_mm + 10)
     ax.set_ylim(x_te_r + 10, -10)  # x aft points DOWN like the 3D top view
     ax.set_aspect("equal")
@@ -203,16 +255,18 @@ def plot_planform(cfg, holes: list[dict], path: str | Path) -> Path:
     ax.set_ylabel("x aft (mm)")
     ax.grid(True, alpha=0.3)
     ax.legend(loc="upper right", fontsize=8)
-    ax.set_title(f"planform — area {pf.planform_area() / 100:.1f} cm², taper {cfg.tip_chord_mm / cfg.root_chord_mm:.2f}, "
-                 f"washout {cfg.washout_deg:g}°, dihedral {cfg.dihedral_deg:g}°", fontsize=10)
+    ax.set_title(
+        f"planform — area {pf.planform_area() / 100:.1f} cm², taper {cfg.tip_chord_mm / cfg.root_chord_mm:.2f}, "
+        f"washout {cfg.washout_deg:g}°, dihedral {cfg.dihedral_deg:g}°",
+        fontsize=10,
+    )
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)
     return Path(path)
 
 
-def plot_sections(cfg, foil, root3, tip3, holes: list[dict], path: str | Path, wall: float,
-                  tip_foil=None) -> Path:
+def plot_sections(cfg, foil, root3, tip3, holes: list[dict], path: str | Path, wall: float, tip_foil=None) -> Path:
     """Root and tip sections at true scale with inner contours, holes and bosses; plus washout panel."""
     from .sections import inner_outline, inset
 
@@ -222,31 +276,37 @@ def plot_sections(cfg, foil, root3, tip3, holes: list[dict], path: str | Path, w
     root_mm = foil.outline() * cfg.root_chord_mm
     ax1.plot(root_mm[:, 0], root_mm[:, 1], "-", color="C3", lw=1.5, label=f"root outer ({cfg.root_chord_mm:g} mm)")
     try:
-        u, l = inset(root_mm, wall)
-        inner = inner_outline(u, l)
+        u, lo = inset(root_mm, wall)
+        inner = inner_outline(u, lo)
         ax1.plot(inner[:, 0], inner[:, 1], "-", color="C0", lw=1, label=f"root cavity (wall {wall:g} mm)")
     except ValueError as e:
         ax1.text(0.5, 0.5, str(e), transform=ax1.transAxes)
     tip_mm = tip_foil.outline() * cfg.tip_chord_mm
-    ax1.plot(tip_mm[:, 0], tip_mm[:, 1], "-", color="C2", lw=1.2, label=f"tip outer ({cfg.tip_chord_mm:g} mm, LE aligned)")
+    ax1.plot(
+        tip_mm[:, 0], tip_mm[:, 1], "-", color="C2", lw=1.2, label=f"tip outer ({cfg.tip_chord_mm:g} mm, LE aligned)"
+    )
     try:
-        u, l = inset(tip_mm, wall)
-        inner = inner_outline(u, l)
+        u, lo = inset(tip_mm, wall)
+        inner = inner_outline(u, lo)
         ax1.plot(inner[:, 0], inner[:, 1], "-", color="C0", lw=0.8)
     except ValueError as e:
         ax1.text(0.5, 0.4, str(e), transform=ax1.transAxes)
     for h in holes:
         ax1.add_patch(plt.Circle((h["x"], h["z"]), h["r_boss"], fc="C1", alpha=0.3, ec="none"))
         ax1.add_patch(plt.Circle((h["x"], h["z"]), h["r"], fc="white", ec="k", lw=1))
-        ax1.annotate(f"{h['name']}\n{h['min_clearance']:+.1f} mm", (h["x"], h["z"] + h["r_boss"] + 1),
-                     fontsize=8, ha="center")
+        ax1.annotate(
+            f"{h['name']}\n{h['min_clearance']:+.1f} mm", (h["x"], h["z"] + h["r_boss"] + 1), fontsize=8, ha="center"
+        )
     ax1.set_aspect("equal")
     ax1.grid(True, alpha=0.3)
     ax1.legend(loc="upper right", fontsize=8)
     ax1.set_xlabel("x from LE (mm)")
     ax1.set_ylabel("z (mm)")
-    ax1.set_title("sections in their own frame (untwisted): outer skin, cavity, holes (⌀) with boss (orange), "
-                  "annotated min clearance", fontsize=9)
+    ax1.set_title(
+        "sections in their own frame (untwisted): outer skin, cavity, holes (⌀) with boss (orange), "
+        "annotated min clearance",
+        fontsize=9,
+    )
     # panel 2: placed root and tip in the global x-z plane (washout + sweep visible)
     for pts3, lab, col in ((root3, "root (y=0)", "C3"), (tip3, f"tip (y={cfg.span_mm:g})", "C2")):
         closed = np.vstack([pts3, pts3[:1]])
@@ -258,8 +318,11 @@ def plot_sections(cfg, foil, root3, tip3, holes: list[dict], path: str | Path, w
     ax2.legend(loc="upper right", fontsize=8)
     ax2.set_xlabel("x aft (mm)")
     ax2.set_ylabel("z up (mm)")
-    ax2.set_title(f"placed sections (global x–z): sweep {cfg.le_sweep_deg:g}°, washout {cfg.washout_deg:g}° "
-                  f"nose-down at tip, dihedral {cfg.dihedral_deg:g}°", fontsize=9)
+    ax2.set_title(
+        f"placed sections (global x–z): sweep {cfg.le_sweep_deg:g}°, washout {cfg.washout_deg:g}° "
+        f"nose-down at tip, dihedral {cfg.dihedral_deg:g}°",
+        fontsize=9,
+    )
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)

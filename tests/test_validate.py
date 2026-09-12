@@ -1,9 +1,8 @@
-import numpy as np
 import pytest
 
 from ornitho import airfoil as af
 from ornitho.config import Hole, WingConfig
-from ornitho.validate import HoleValidationError, check_holes, hole_centres, simpson_volume
+from ornitho.validate import HoleValidationError, check_holes, simpson_volume
 
 
 @pytest.fixture
@@ -15,6 +14,7 @@ def setup():
         root3 = pf.station(0).place_unit(foil.outline())
         tip3 = pf.station(1).place_unit(foil.outline())
         return cfg, foil, root3, tip3
+
     return _make
 
 
