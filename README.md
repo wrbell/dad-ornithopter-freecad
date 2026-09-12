@@ -1,5 +1,7 @@
 # Ornithopter wingtip — parametric CAD + render loop
 
+[![ci](https://github.com/wrbell/dad-ornithopter-freecad/actions/workflows/ci.yml/badge.svg)](https://github.com/wrbell/dad-ornithopter-freecad/actions/workflows/ci.yml)
+
 Parametric S1223 wingtip (TPU shell, FDM-printed) for an 8-wing flapping-wing (ornithopter) drone.
 Edit the `CONFIG` dict at the top of `wingtip.py`, run it, look at the PNGs, read the mass report.
 
