@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: System libraries for OCCT / VTK (headless)
-        run: sudo apt-get update -q && sudo apt-get install -y -q libgl1 libglu1-mesa libxrender1 libxext1 libxcursor1 libxft2 libxinerama1 libxi6 libxrandr2 libsm6
+        run: sudo apt-get update -q && sudo apt-get install -y -q libgl1 libglu1-mesa libxrender1 libxext6 libxcursor1 libxft2 libxinerama1 libxi6 libxrandr2 libsm6
       - name: Install
         run: |
           python -m pip install --upgrade pip
